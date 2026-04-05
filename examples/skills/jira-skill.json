@@ -1,0 +1,37 @@
+{
+  "name": "create_jira_ticket",
+  "description": "Creates a new Jira ticket in the project backlog and returns the ticket key (e.g. PROJ-123).",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "project_key": {
+        "type": "string",
+        "description": "The Jira project key (e.g. 'PROJ')"
+      },
+      "summary": {
+        "type": "string",
+        "description": "One-line title of the ticket (max 255 characters)"
+      },
+      "description": {
+        "type": "string",
+        "description": "Full description including acceptance criteria (Markdown supported)"
+      },
+      "issue_type": {
+        "type": "string",
+        "enum": ["Bug", "Story", "Task", "Epic"],
+        "description": "The type of Jira issue"
+      },
+      "priority": {
+        "type": "string",
+        "enum": ["Lowest", "Low", "Medium", "High", "Highest"],
+        "description": "Priority of the ticket"
+      },
+      "labels": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Optional labels to attach to the ticket"
+      }
+    },
+    "required": ["project_key", "summary", "issue_type"]
+  }
+}

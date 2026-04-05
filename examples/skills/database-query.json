@@ -1,0 +1,26 @@
+{
+  "name": "execute_readonly_query",
+  "description": "Executes a read-only SQL SELECT query against the application database and returns results as JSON. Only SELECT statements are permitted — any attempt to use INSERT, UPDATE, DELETE, DROP, or DDL statements will be rejected.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "sql": {
+        "type": "string",
+        "description": "A valid SQL SELECT statement. Must not contain any data-modifying clauses."
+      },
+      "parameters": {
+        "type": "array",
+        "items": {},
+        "description": "Optional positional parameters for parameterised queries (e.g. [42, 'active'])."
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 1000,
+        "default": 100,
+        "description": "Maximum number of rows to return. Defaults to 100."
+      }
+    },
+    "required": ["sql"]
+  }
+}
