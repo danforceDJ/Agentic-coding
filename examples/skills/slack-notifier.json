@@ -1,0 +1,22 @@
+{
+  "name": "send_slack_message",
+  "description": "Sends a message to a Slack channel or user. Returns the message timestamp.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "channel": {
+        "type": "string",
+        "description": "Channel name (e.g. '#releases') or user ID (e.g. 'U01234ABC')"
+      },
+      "text": {
+        "type": "string",
+        "description": "The message body. Supports Slack mrkdwn formatting."
+      },
+      "thread_ts": {
+        "type": "string",
+        "description": "Optional. The timestamp of an existing message to reply in its thread."
+      }
+    },
+    "required": ["channel", "text"]
+  }
+}
