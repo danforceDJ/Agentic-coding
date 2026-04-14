@@ -16,6 +16,13 @@ pip install -r requirements.txt
 python server.py
 ```
 
+## Run unit tests
+
+```bash
+cd examples/skills/local-weather-mcp
+python -m unittest -v test_server.py
+```
+
 ## VS Code MCP configuration
 
 Use [`copilot-mcp-settings.good.json`](./copilot-mcp-settings.good.json) as your template for `.vscode/settings.json`.
