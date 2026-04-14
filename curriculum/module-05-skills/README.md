@@ -130,7 +130,76 @@ Agent ──► MCP Client ──► MCP Server ──► Your Tool/API
 }
 ```
 
-See [examples/skills/](../../examples/skills/) for MCP skill definition examples.
+### 5.5.1 MCP tool limitations (important)
+
+Before implementing custom MCP tools, be clear about practical limits:
+
+- **Environment policy limits** — an MCP tool can still be blocked by enterprise/network policy.
+- **Runtime dependency limits** — if Python/Node/runtime dependencies are missing, the tool will fail to start.
+- **Latency and timeouts** — slow external APIs can make tools unreliable in chat flows.
+- **Schema quality limits** — weak tool schemas produce ambiguous calls and poor outputs.
+- **Security boundaries** — MCP does not automatically sanitize user input or protect secrets; your server must do this.
+- **Local-only scope** — a local MCP server only works on the machine where it is running.
+
+### 5.5.2 Build a local MCP server in Python (one skill: `check_weather`)
+
+Use the runnable example in:
+
+`examples/skills/local-weather-mcp/`
+
+It exposes exactly one MCP tool:
+
+- `check_weather(city: string, unit: c|f)` → returns a mocked local weather response.
+
+This example uses mocked data so it runs offline and avoids API key management while learning.
+
+### 5.5.3 Local MCP configuration
+
+Use this **good pattern** config shape in your local `.vscode/settings.json`:
+
+```json
+{
+  "github.copilot.chat.mcpServers": {
+    "local-weather": {
+      "command": "python",
+      "args": ["${workspaceFolder}/examples/skills/local-weather-mcp/server.py"],
+      "env": {}
+    }
+  }
+}
+```
+
+Avoid this **bad pattern**:
+
+```json
+{
+  "github.copilot.chat.mcpServers": {
+    "weather": {
+      "command": "python",
+      "args": ["server.py"]
+    }
+  }
+}
+```
+
+Why this is bad:
+- relative path is fragile and depends on current working directory
+- server name is vague
+- no explicit environment block
+
+### 5.5.4 Good vs bad prompting pattern for MCP tool usage
+
+**Good pattern prompt (specific + constrained):**
+
+> Use the `check_weather` MCP tool for city `Berlin` and unit `c`. Return only: city, temperature, condition.
+
+**Bad pattern prompt (ambiguous + unconstrained):**
+
+> Can you check weather maybe somewhere in Europe and tell me anything useful?
+
+The good pattern improves tool selection, argument quality, and output consistency.
+
+See [examples/skills/](../../examples/skills/) for complete local MCP files and runnable setup.
 
 ---
 
@@ -193,6 +262,7 @@ each with: a severity (Low/Medium/High), a description, and a file:line referenc
 - [ ] I can declare skills in an agent definition file.
 - [ ] I applied the principle of least privilege when choosing skills.
 - [ ] I understand the security risks of powerful skills like `run_terminal_command`.
+- [ ] I can run a local Python MCP server with one custom skill and test good vs bad prompt patterns.
 
 ---
 

@@ -15,6 +15,7 @@ can call it correctly.
 | [`jira-skill.json`](./jira-skill.json) | Creates and queries Jira tickets |
 | [`slack-notifier.json`](./slack-notifier.json) | Sends Slack messages |
 | [`database-query.json`](./database-query.json) | Executes read-only SQL queries |
+| [`local-weather-mcp/`](./local-weather-mcp/) | Runnable local Python MCP server with one `check_weather` skill |
 
 ---
 
@@ -37,3 +38,32 @@ can call it correctly.
 ```
 
 4. Declare the skill name in your agent file's `tools:` list.
+
+---
+
+## Local Python MCP Example (`check_weather`)
+
+This repository includes a runnable local MCP server:
+
+- Server: [`local-weather-mcp/server.py`](./local-weather-mcp/server.py)
+- Dependency list: [`local-weather-mcp/requirements.txt`](./local-weather-mcp/requirements.txt)
+- Good config example: [`local-weather-mcp/copilot-mcp-settings.good.json`](./local-weather-mcp/copilot-mcp-settings.good.json)
+- Bad config example: [`local-weather-mcp/copilot-mcp-settings.bad.json`](./local-weather-mcp/copilot-mcp-settings.bad.json)
+
+### Run locally
+
+```bash
+cd examples/skills/local-weather-mcp
+python -m venv .venv
+source .venv/bin/activate  # Windows PowerShell: .venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python server.py
+```
+
+### Good prompt pattern
+
+> Use `check_weather` with city `Tokyo` and unit `c`. Return only city, temperature, and condition.
+
+### Bad prompt pattern
+
+> Weather please.
