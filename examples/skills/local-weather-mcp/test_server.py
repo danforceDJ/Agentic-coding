@@ -2,10 +2,10 @@
 
 import unittest
 
-from server import check_weather
+from server import MOCK_WEATHER_C, check_weather
 
 
-class CheckWeatherTestCase(unittest.TestCase):
+class TestCheckWeather(unittest.TestCase):
     def test_returns_mocked_city_weather(self) -> None:
         response = check_weather("Berlin", "c")
         self.assertEqual(response["city"], "Berlin")
@@ -29,6 +29,14 @@ class CheckWeatherTestCase(unittest.TestCase):
     def test_converts_to_fahrenheit(self) -> None:
         response = check_weather("Berlin", "f")
         self.assertEqual(response["temperature"], 55.4)
+
+    def test_rounds_temperature_to_single_decimal(self) -> None:
+        MOCK_WEATHER_C["rounding-city"] = {"temperature": 10.033, "condition": "Windy"}
+        try:
+            response = check_weather("rounding-city", "f")
+            self.assertEqual(response["temperature"], 50.1)
+        finally:
+            del MOCK_WEATHER_C["rounding-city"]
 
 
 if __name__ == "__main__":
