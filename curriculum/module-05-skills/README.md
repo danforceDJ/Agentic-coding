@@ -149,7 +149,7 @@ Use the runnable example in:
 
 It exposes exactly one MCP tool:
 
-- `check_weather(city: str, unit: c|f)` → returns a mocked local weather response.
+- `check_weather(city: str, unit: "c" | "f" = "c")` → returns a mocked local weather response.
 
 This example uses mocked data so it runs offline and avoids API key management while learning.
 

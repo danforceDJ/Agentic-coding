@@ -5,7 +5,7 @@ import unittest
 from server import check_weather
 
 
-class CheckWeatherTests(unittest.TestCase):
+class CheckWeatherTestCase(unittest.TestCase):
     def test_returns_mocked_city_weather(self) -> None:
         response = check_weather("Berlin", "c")
         self.assertEqual(response["city"], "Berlin")
