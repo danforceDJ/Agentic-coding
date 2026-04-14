@@ -27,7 +27,18 @@ MOCK_WEATHER_C = {
 
 @mcp.tool()
 def check_weather(city: str, unit: str = "c") -> WeatherResponse:
-    """Return mocked weather for a city using celsius or fahrenheit output."""
+    """Return mocked weather data for a city.
+
+    Args:
+        city: City name from the local mock dataset.
+        unit: Temperature unit, either "c" (celsius) or "f" (fahrenheit).
+
+    Returns:
+        A weather object with city, unit, temperature, condition, and source fields.
+
+    Raises:
+        ValueError: If city is empty or unit is not "c" or "f".
+    """
     normalized_city = city.strip().lower()
     normalized_unit = unit.strip().lower()
 
