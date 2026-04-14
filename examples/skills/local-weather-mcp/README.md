@@ -27,6 +27,8 @@ python -m unittest -v test_server.py
 
 Use [`copilot-mcp-settings.good.json`](./copilot-mcp-settings.good.json) as your template for `.vscode/settings.json`.
 
+[`copilot-mcp-settings.bad.json`](./copilot-mcp-settings.bad.json) is intentionally incorrect to demonstrate an anti-pattern: `args: ["server.py"]` depends on the current working directory and often breaks.
+
 ## Prompt patterns
 
 Good pattern:
