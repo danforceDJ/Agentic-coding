@@ -5,6 +5,11 @@ This repository contains educational material for a 4-hour GitHub Copilot
 Agentic Coding course. It includes curriculum modules, example files,
 and a starter Node.js/Express application used in Module 7.
 
+The root `index.html` is a standalone slide-deck presentation covering all 7
+modules. It requires **no build step** — pure HTML/CSS/JS in a single file.
+It is deployed on Netlify at **https://llmbasicscopilot.netlify.app/** and
+auto-deploys on every push to the default branch.
+
 ## Tech Stack
 - Node.js 20 LTS with TypeScript (strict mode)
 - Express 4 for the starter API
@@ -29,6 +34,13 @@ and a starter Node.js/Express application used in Module 7.
 - Module documentation lives in `curriculum/module-XX-*/README.md`.
 - Keep code examples in documentation runnable and copy-paste friendly.
 - Each module README must include a checklist at the end.
+
+## Presentation (`index.html`)
+- `index.html` is a self-contained slide deck — do NOT extract CSS or JS into separate files.
+- Each slide is a `<div class="slide">` inside `<div class="deck" id="deck">`.
+- Module color badges use classes `m1`–`m7` (see `:root` CSS variables for the palette).
+- Slide content must stay in sync with the corresponding `curriculum/module-XX-*/README.md`.
+- The live site is at https://llmbasicscopilot.netlify.app/ — changes deploy automatically on push.
 
 ## Security
 - Never log passwords, tokens, or personally identifiable information (PII).
