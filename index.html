@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LLM Basics &amp; GitHub Copilot - University Course</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+  :root{
+    --bg:#0a0a1a;
+    --surface:#12122a;
+    --card:#1a1a3e;
+    --border:#2a2a5e;
+    --accent:#7c5cfc;
+    --accent2:#00d4aa;
+    --accent3:#ff6b9d;
+    --text:#e8e8f0;
+    --text-dim:#8888aa;
+    --gradient:linear-gradient(135deg,#7c5cfc,#00d4aa);
+    --gradient2:linear-gradient(135deg,#ff6b9d,#7c5cfc);
+    --gradient3:linear-gradient(135deg,#00d4aa,#7c5cfc);
+    --font-sans:'Inter',system-ui,-apple-system,sans-serif;
+    --font-mono:'JetBrains Mono','Fira Code',monospace;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  html,body{
+    height:100%;width:100%;overflow:hidden;
+    font-family:var(--font-sans);background:var(--bg);color:var(--text);
+  }
+
+  /* ── SLIDE ENGINE ── */
+  .deck{position:relative;width:100%;height:100vh;overflow:hidden}
+  .slide{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:3rem 4rem;
+    opacity:0;pointer-events:none;
+    transition:opacity .5s ease, transform .5s ease;
+    transform:translateX(40px);
+    overflow-y:auto;
+  }
+  .slide.active{opacity:1;pointer-events:auto;transform:translateX(0)}
+  .slide.prev{opacity:0;transform:translateX(-40px)}
+
+  .slide-inner{max-width:1100px;width:100%;text-align:left}
+
+  /* ── TYPOGRAPHY ── */
+  h1{font-size:3.2rem;font-weight:800;line-height:1.15;margin-bottom:1rem;letter-spacing:-.02em}
+  h2{font-size:2.2rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;letter-spacing:-.01em}
+  h3{font-size:1.4rem;font-weight:600;margin-bottom:.6rem;color:var(--accent2)}
+  p,.desc{font-size:1.1rem;line-height:1.7;color:var(--text-dim);margin-bottom:.8rem;max-width:800px}
+  .big-text{font-size:1.5rem;line-height:1.6;color:var(--text)}
+  .gradient-text{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .gradient-text2{background:var(--gradient2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .gradient-text3{background:var(--gradient3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+  /* ── CODE ── */
+  pre{
+    background:#0d0d24;border:1px solid var(--border);border-radius:12px;
+    padding:1.2rem 1.5rem;font-family:var(--font-mono);font-size:.85rem;
+    line-height:1.7;overflow-x:auto;margin:.8rem 0;color:#c8c8e0;
+    max-width:100%;
+  }
+  code{font-family:var(--font-mono);font-size:.88em;color:var(--accent2);background:rgba(0,212,170,.08);padding:.15em .4em;border-radius:4px}
+  pre code{background:none;padding:0;color:inherit}
+  .keyword{color:#7c5cfc}.string{color:#00d4aa}.comment{color:#555580;font-style:italic}.fn{color:#ff6b9d}.num{color:#ffaa44}
+
+  /* ── CARDS & GRIDS ── */
+  .card-grid{display:grid;gap:1.2rem;margin:.8rem 0}
+  .card-grid.cols-2{grid-template-columns:repeat(2,1fr)}
+  .card-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+  .card-grid.cols-4{grid-template-columns:repeat(4,1fr)}
+
+  .card{
+    background:var(--card);border:1px solid var(--border);border-radius:16px;
+    padding:1.5rem;transition:transform .2s,border-color .2s;
+  }
+  .card:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .card h3{margin-bottom:.4rem}
+  .card p{font-size:.95rem;margin-bottom:0}
+
+  .card-icon{font-size:2rem;margin-bottom:.8rem;display:block}
+  .card-accent{border-left:3px solid var(--accent);padding-left:1.2rem}
+  .card-accent2{border-left:3px solid var(--accent2);padding-left:1.2rem}
+  .card-accent3{border-left:3px solid var(--accent3);padding-left:1.2rem}
+
+  /* ── TABLE ── */
+  table{width:100%;border-collapse:collapse;margin:.8rem 0;font-size:.95rem}
+  th{text-align:left;padding:.7rem 1rem;background:var(--card);color:var(--accent2);font-weight:600;border-bottom:2px solid var(--border)}
+  td{padding:.65rem 1rem;border-bottom:1px solid rgba(42,42,94,.5);color:var(--text-dim)}
+  tr:hover td{background:rgba(124,92,252,.04)}
+
+  /* ── BADGES ── */
+  .badge{
+    display:inline-block;padding:.25rem .7rem;border-radius:20px;font-size:.78rem;font-weight:600;
+    margin-right:.4rem;margin-bottom:.3rem;
+  }
+  .badge-purple{background:rgba(124,92,252,.18);color:#a78bfa}
+  .badge-green{background:rgba(0,212,170,.15);color:#00d4aa}
+  .badge-pink{background:rgba(255,107,157,.15);color:#ff6b9d}
+
+  /* ── DIAGRAM BOX ── */
+  .diagram{
+    background:#0d0d24;border:1px solid var(--border);border-radius:12px;
+    padding:1.5rem;font-family:var(--font-mono);font-size:.82rem;line-height:1.8;
+    color:#9999bb;margin:.8rem 0;white-space:pre;overflow-x:auto;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar{
+    position:fixed;top:0;left:0;height:3px;
+    background:var(--gradient);z-index:100;
+    transition:width .4s ease;
+  }
+
+  /* ── NAV ── */
+  .nav{
+    position:fixed;bottom:2rem;right:2rem;display:flex;gap:.6rem;z-index:90;
+  }
+  .nav button{
+    width:48px;height:48px;border-radius:50%;border:1px solid var(--border);
+    background:var(--card);color:var(--text);font-size:1.2rem;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:all .2s;
+  }
+  .nav button:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+  .nav button:disabled{opacity:.3;cursor:default;background:var(--card);border-color:var(--border)}
+
+  .slide-counter{
+    position:fixed;bottom:2.4rem;left:2rem;
+    font-size:.85rem;color:var(--text-dim);font-family:var(--font-mono);z-index:90;
+  }
+
+  /* ── MODULE BADGE ── */
+  .module-badge{
+    display:inline-flex;align-items:center;gap:.5rem;
+    padding:.35rem 1rem;border-radius:20px;font-size:.78rem;font-weight:600;
+    margin-bottom:1rem;
+  }
+  .module-badge.m1{background:rgba(124,92,252,.15);color:#a78bfa}
+  .module-badge.m2{background:rgba(0,212,170,.12);color:#00d4aa}
+  .module-badge.m3{background:rgba(255,107,157,.12);color:#ff6b9d}
+  .module-badge.m4{background:rgba(255,170,68,.12);color:#ffaa44}
+  .module-badge.m5{background:rgba(68,170,255,.12);color:#44aaff}
+  .module-badge.m6{background:rgba(170,68,255,.12);color:#aa44ff}
+  .module-badge.m7{background:rgba(255,68,68,.12);color:#ff6868}
+
+  /* ── CALLOUT ── */
+  .callout{
+    background:rgba(124,92,252,.08);border-left:3px solid var(--accent);
+    padding:1rem 1.2rem;border-radius:0 10px 10px 0;margin:.8rem 0;
+  }
+  .callout p{color:var(--text);margin:0}
+  .callout-green{background:rgba(0,212,170,.08);border-left-color:var(--accent2)}
+  .callout-pink{background:rgba(255,107,157,.08);border-left-color:var(--accent3)}
+
+  /* ── LIST ── */
+  ul,ol{padding-left:1.5rem;margin:.5rem 0}
+  li{margin-bottom:.4rem;line-height:1.6;color:var(--text-dim);font-size:1rem}
+  li strong{color:var(--text)}
+
+  /* ── FLOW ARROWS ── */
+  .flow{display:flex;align-items:center;gap:.8rem;margin:.8rem 0;flex-wrap:wrap}
+  .flow-step{
+    background:var(--card);border:1px solid var(--border);border-radius:10px;
+    padding:.6rem 1.1rem;font-size:.9rem;font-weight:500;
+  }
+  .flow-arrow{color:var(--accent);font-size:1.3rem}
+
+  /* ── TWO COLUMN ── */
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin:.8rem 0}
+
+  /* ── TITLE SLIDE ── */
+  .title-slide{text-align:center}
+  .title-slide h1{font-size:3.8rem;margin-bottom:.8rem}
+  .title-slide .subtitle{font-size:1.4rem;color:var(--text-dim);margin-bottom:2rem}
+  .title-slide .meta{font-size:1rem;color:var(--text-dim)}
+
+  /* ── DECORATIVE ── */
+  .glow{
+    position:absolute;width:400px;height:400px;border-radius:50%;
+    filter:blur(120px);opacity:.12;pointer-events:none;
+  }
+  .glow-purple{background:#7c5cfc}
+  .glow-green{background:#00d4aa}
+  .glow-pink{background:#ff6b9d}
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:900px){
+    .slide{padding:2rem 1.5rem}
+    h1{font-size:2.2rem}h2{font-size:1.6rem}
+    .card-grid.cols-3,.card-grid.cols-4{grid-template-columns:repeat(2,1fr)}
+    .two-col{grid-template-columns:1fr}
+    .title-slide h1{font-size:2.6rem}
+  }
+  @media(max-width:600px){
+    .card-grid.cols-2,.card-grid.cols-3,.card-grid.cols-4{grid-template-columns:1fr}
+    .nav{bottom:1rem;right:1rem}
+    .slide-counter{bottom:1.4rem;left:1rem}
+  }
+
+  /* ── KEYBOARD HINT ── */
+  .key-hint{
+    position:fixed;bottom:2.5rem;left:50%;transform:translateX(-50%);
+    font-size:.75rem;color:var(--text-dim);z-index:90;opacity:.5;
+    font-family:var(--font-mono);
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+
+<div class="deck" id="deck">
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 0: TITLE -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide active title-slide">
+  <div class="glow glow-purple" style="top:-150px;left:-100px"></div>
+  <div class="glow glow-green" style="bottom:-150px;right:-100px"></div>
+  <div class="slide-inner" style="text-align:center">
+    <p style="font-size:.9rem;color:var(--text-dim);letter-spacing:.15em;text-transform:uppercase;margin-bottom:1.5rem">University Course</p>
+    <h1><span class="gradient-text">LLM Basics</span> &amp;<br/>GitHub Copilot</h1>
+    <p class="subtitle">Understanding Large Language Models &amp; Controlling AI-Assisted Development</p>
+    <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem">
+      <span class="badge badge-purple">7 Modules</span>
+      <span class="badge badge-green">4 Hours</span>
+      <span class="badge badge-pink">Hands-On</span>
+    </div>
+    <p class="meta" style="margin-top:2rem">Press <code>&#8594;</code> or click arrows to navigate</p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 1: COURSE OVERVIEW -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <h2><span class="gradient-text">Course Overview</span></h2>
+    <p>A practical, hands-on course teaching how LLMs work and how to control GitHub Copilot for real-world software engineering.</p>
+    <div class="card-grid cols-4" style="margin-top:1.2rem">
+      <div class="card">
+        <span class="card-icon">&#129302;</span>
+        <h3>Modules 1-2</h3>
+        <p>What are agents &amp; how LLMs actually work</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">&#9881;&#65039;</span>
+        <h3>Modules 3-4</h3>
+        <p>Instruction priority &amp; configuring Copilot</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">&#128295;</span>
+        <h3>Modules 5-6</h3>
+        <p>Skills, MCP tools &amp; the Copilot CLI</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">&#128640;</span>
+        <h3>Module 7</h3>
+        <p>Build a full app with multi-agent coordination</p>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:1.2rem">
+      <p><strong>Goal:</strong> By the end, you can explain how LLMs process instructions, write effective prompts, configure Copilot for your projects, and coordinate multiple AI agents to build features end-to-end.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 2: MODULE 1 - WHAT IS AN AGENT? -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <span class="module-badge m1">Module 1 &mdash; Introduction to Agentic Coding</span>
+    <h2>What Is an <span class="gradient-text">Agent</span>?</h2>
+    <p>An agent is an AI system that can observe, reason, and act in a loop until a goal is achieved.</p>
+    <div class="card-grid cols-3" style="margin-top:1rem">
+      <div class="card card-accent">
+        <h3>1. Observe</h3>
+        <p>Reads your codebase, open files, terminal output, and environment</p>
+      </div>
+      <div class="card card-accent2">
+        <h3>2. Reason</h3>
+        <p>Plans what to do based on the goal you gave it</p>
+      </div>
+      <div class="card card-accent3">
+        <h3>3. Act</h3>
+        <p>Writes code, runs commands, calls APIs, searches the web</p>
+      </div>
+    </div>
+    <div class="callout-green callout" style="margin-top:1rem">
+      <p><strong>Key insight:</strong> Unlike a one-shot chat response, an agent maintains a <em>plan</em> and keeps working until it succeeds or asks for clarification.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 3: MODULE 1 - THREE MODES -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <span class="module-badge m1">Module 1</span>
+    <h2>Three Modes of <span class="gradient-text2">GitHub Copilot</span></h2>
+    <table>
+      <thead><tr><th>Feature</th><th>Autocomplete</th><th>Chat</th><th>Agent Mode</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Scope</strong></td><td>Single line / block</td><td>Single response</td><td>Multi-step task</td></tr>
+        <tr><td><strong>Memory</strong></td><td>None</td><td>Conversation history</td><td>Full workspace context</td></tr>
+        <tr><td><strong>Tools</strong></td><td>None</td><td>Limited</td><td>Files, terminal, web, APIs</td></tr>
+        <tr><td><strong>Autonomy</strong></td><td>Low</td><td>Medium</td><td>High</td></tr>
+      </tbody>
+    </table>
+    <div class="diagram" style="margin-top:1rem">                    GitHub Copilot
+  ┌─────────────┐  ┌───────────────┐  ┌───────────────┐
+  │ Autocomplete│  │     Chat      │  │  Agent Mode   │
+  │  (inline)   │  │  (side panel) │  │  (agentic)    │
+  └─────────────┘  └───────────────┘  └───────────────┘
+   Tab to accept    Ask questions      Delegate tasks</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 4: MODULE 1 - KEY VOCABULARY -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <span class="module-badge m1">Module 1</span>
+    <h2>Key <span class="gradient-text3">Vocabulary</span></h2>
+    <div class="card-grid cols-2">
+      <div class="card"><h3>Agent</h3><p>An AI that loops: observe &rarr; reason &rarr; act</p></div>
+      <div class="card"><h3>Tool</h3><p>A capability the agent can call (file read/write, terminal, search)</p></div>
+      <div class="card"><h3>Skill</h3><p>A packaged, reusable tool with a defined interface</p></div>
+      <div class="card"><h3>Instruction File</h3><p>A Markdown file that shapes how the agent behaves in a repo</p></div>
+      <div class="card"><h3>Context Window</h3><p>The maximum amount of text an LLM can process in one go</p></div>
+      <div class="card"><h3>System Prompt</h3><p>Instructions prepended before the user's message</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 5: MODULE 2 - TOKENS -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <span class="module-badge m2">Module 2 &mdash; How LLMs Work</span>
+    <h2>From Text to <span class="gradient-text">Tokens</span></h2>
+    <p>LLMs don't read words &mdash; they read <strong>tokens</strong>. A token is roughly 3&ndash;4 characters of English text.</p>
+    <pre><code><span class="string">"GitHub Copilot is amazing!"</span>
+  &darr; tokenised &darr;
+[<span class="string">"Git"</span>, <span class="string">"Hub"</span>, <span class="string">" Cop"</span>, <span class="string">"ilot"</span>, <span class="string">" is"</span>, <span class="string">" amazing"</span>, <span class="string">"!"</span>]
+  <span class="num">1</span>      <span class="num">2</span>      <span class="num">3</span>       <span class="num">4</span>      <span class="num">5</span>      <span class="num">6</span>             <span class="num">7</span>   &larr; 7 tokens</code></pre>
+    <div class="card-grid cols-3">
+      <div class="card card-accent">
+        <h3>Cost</h3>
+        <p>Every token costs money and time to process</p>
+      </div>
+      <div class="card card-accent2">
+        <h3>Limits</h3>
+        <p>Fixed context window (e.g. 128K tokens). Older content gets dropped</p>
+      </div>
+      <div class="card card-accent3">
+        <h3>Rule of Thumb</h3>
+        <p>1,000 tokens &asymp; 750 words &asymp; ~40 lines of code</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 6: MODULE 2 - CONTEXT WINDOW -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <span class="module-badge m2">Module 2</span>
+    <h2>The <span class="gradient-text2">Context Window</span></h2>
+    <p>Think of the context window as a <strong>sliding whiteboard</strong> &mdash; the model can only see what fits on it right now.</p>
+    <div class="diagram">                     Context Window
+  ┌───────────────┐ ┌─────────────┐ ┌─────────────────┐
+  │ System Prompt  │ │  Chat Hist. │ │  Current Query  │
+  │ (instructions) │ │  + files    │ │  (your message) │
+  └───────────────┘ └─────────────┘ └─────────────────┘
+
+  &larr; Everything here influences the model's next token &rarr;</div>
+    <h3 style="margin-top:1rem">What Copilot automatically puts in your context:</h3>
+    <ol>
+      <li><strong>Currently open file</strong></li>
+      <li><strong>Recently opened</strong> and related files</li>
+      <li><strong>Your instruction files</strong> (see Module 3)</li>
+      <li><strong>Conversation history</strong></li>
+      <li><strong>Your current message</strong></li>
+    </ol>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 7: MODULE 2 - NEXT TOKEN PREDICTION -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <span class="module-badge m2">Module 2</span>
+    <h2>How the Model <span class="gradient-text3">Generates Text</span></h2>
+    <p>LLMs are <strong>next-token predictors</strong>. Given all tokens so far, the model outputs a probability distribution and samples the next token.</p>
+    <pre><code><span class="comment">// Input:</span>  <span class="string">"def add(a, b):\n    return"</span>
+<span class="comment">// Model:</span>  P(<span class="string">"a+b"</span>) = <span class="num">72%</span>, P(<span class="string">"a + b"</span>) = <span class="num">18%</span>, P(<span class="string">"sum(a,b)"</span>) = <span class="num">6%</span>, ...
+<span class="comment">// Output:</span> <span class="string">"a + b"</span>   &larr; sampled token</code></pre>
+    <h3 style="margin-top:1rem">Temperature Controls Creativity</h3>
+    <div class="card-grid cols-3">
+      <div class="card card-accent">
+        <h3>0.0 &mdash; Deterministic</h3>
+        <p>Always picks the highest probability. Great for code generation.</p>
+      </div>
+      <div class="card card-accent2">
+        <h3>0.7 &mdash; Balanced</h3>
+        <p>Some creativity. Good for explanations and documentation.</p>
+      </div>
+      <div class="card card-accent3">
+        <h3>1.5 &mdash; Creative</h3>
+        <p>High randomness. Useful for brainstorming and ideation.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 8: MODULE 2 - ATTENTION & PROMPT STRUCTURE -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <span class="module-badge m2">Module 2</span>
+    <h2>Prompt Structure That <span class="gradient-text">Works</span></h2>
+    <p>The model uses <strong>attention mechanisms</strong> to decide which earlier tokens matter when generating the next one.</p>
+    <div class="two-col">
+      <div>
+        <h3>Effective Prompt Template</h3>
+        <pre><code><span class="keyword">[Role / persona]</span>      &larr; who the model should act as
+<span class="keyword">[Background context]</span>  &larr; what it needs to know
+<span class="keyword">[The task]</span>            &larr; what you want it to do
+<span class="keyword">[Constraints]</span>         &larr; what it must or must not do
+<span class="keyword">[Output format]</span>       &larr; how you want the result
+<span class="keyword">[Examples]</span>            &larr; show a sample (optional)</code></pre>
+      </div>
+      <div>
+        <h3 style="color:var(--accent2)">Good Prompt</h3>
+        <pre><code><span class="comment">You are a senior TypeScript engineer.</span>
+<span class="comment">This project uses Express 4 and Jest.</span>
+<span class="fn">Refactor</span> the getUserById function to:
+- Use <span class="keyword">async/await</span>
+- Return <span class="keyword">null</span> instead of throwing
+- Keep existing JSDoc comments
+Return only the refactored function.</code></pre>
+        <h3 style="color:var(--accent3);margin-top:.8rem">Bad Prompt</h3>
+        <pre><code><span class="comment">Fix the user function.</span></code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 9: MODULE 3 - FOUR INSTRUCTION SOURCES -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <span class="module-badge m3">Module 3 &mdash; Instruction Priority Order</span>
+    <h2>The Four Places Copilot <span class="gradient-text2">Reads Instructions</span></h2>
+    <div class="diagram">  Priority (highest &rarr; lowest)
+  ─────────────────────────────────────────────────
+  1. Inline prompt              &larr; what you type right now
+  2. Agent definition file      &larr; .github/agents/&lt;name&gt;.md
+  3. Repo instruction file      &larr; .github/copilot-instructions.md
+  4. User-level instructions    &larr; VS Code settings
+  ─────────────────────────────────────────────────</div>
+    <div class="callout" style="margin-top:1rem">
+      <p><strong>Important:</strong> Higher priority does not erase lower priority. All sources are combined. When they conflict, the model follows the most recently / most prominently stated rule.</p>
+    </div>
+    <div class="flow" style="margin-top:1rem">
+      <div class="flow-step" style="border-color:var(--text-dim)">User-level</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step" style="border-color:var(--accent3)">copilot-instructions.md</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step" style="border-color:var(--accent)">Agent file</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step" style="border-color:var(--accent2)">Inline prompt</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 10: MODULE 3 - CONFLICT RESOLUTION -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <span class="module-badge m3">Module 3</span>
+    <h2>How the Model <span class="gradient-text3">Resolves Conflicts</span></h2>
+    <div class="card-grid cols-3">
+      <div class="card card-accent">
+        <h3>Recency Bias</h3>
+        <p>Later instructions (closer to the generation point) usually win</p>
+      </div>
+      <div class="card card-accent2">
+        <h3>Specificity</h3>
+        <p>More specific instructions override general ones</p>
+      </div>
+      <div class="card card-accent3">
+        <h3>Repetition</h3>
+        <p>If an instruction appears multiple times, it is reinforced</p>
+      </div>
+    </div>
+    <div class="two-col" style="margin-top:1.2rem">
+      <div>
+        <h3 style="color:var(--accent3)">Conflicting Instructions</h3>
+        <pre><code><span class="comment"># copilot-instructions.md</span>
+Always use <span class="keyword">async/await</span> for
+asynchronous code.
+
+<span class="comment"># Agent file</span>
+Use <span class="keyword">Promises</span> with .then()/.catch()
+for all async operations.</code></pre>
+      </div>
+      <div>
+        <h3 style="color:var(--accent2)">Result</h3>
+        <p class="big-text" style="margin-top:.5rem">The agent file (higher priority) will likely win.</p>
+        <div class="callout-green callout">
+          <p>Keep instructions consistent across all files to avoid confusion.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 11: MODULE 4 - COPILOT INSTRUCTIONS -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <span class="module-badge m4">Module 4 &mdash; Setting Up Copilot Instructions</span>
+    <h2>The <span class="gradient-text">Most Impactful File</span> in Your Repo</h2>
+    <p><code>.github/copilot-instructions.md</code> is automatically included in every Copilot session. Think of it as an onboarding doc for an AI engineer joining your team.</p>
+    <div class="card-grid cols-3" style="margin-top:1rem">
+      <div class="card">
+        <h3>Project Overview</h3>
+        <p>1-3 sentences: what this project is</p>
+      </div>
+      <div class="card">
+        <h3>Tech Stack</h3>
+        <p>Runtime, framework, DB, testing, linting, CI</p>
+      </div>
+      <div class="card">
+        <h3>Conventions</h3>
+        <p>TypeScript strict, naming, file structure, max function length</p>
+      </div>
+      <div class="card">
+        <h3>Testing Rules</h3>
+        <p>Every function needs a test, 80% coverage, real DB in integration</p>
+      </div>
+      <div class="card">
+        <h3>Security Rules</h3>
+        <p>No PII logging, parameterised queries, Zod validation</p>
+      </div>
+      <div class="card">
+        <h3>Output Format</h3>
+        <p>Code only unless asked, JSDoc comments, TODO markers</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 12: MODULE 4 - CRAFT FRAMEWORK -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <span class="module-badge m4">Module 4</span>
+    <h2>The <span class="gradient-text2">CRAFT</span> Framework</h2>
+    <p>Use CRAFT to write instructions that are easy for the model to follow:</p>
+    <table style="margin-top:1rem">
+      <thead><tr><th>Letter</th><th>Stands For</th><th>Question to Ask</th></tr></thead>
+      <tbody>
+        <tr><td><strong style="color:var(--accent);font-size:1.2rem">C</strong></td><td><strong>Clear</strong></td><td>Would a new engineer understand this without asking?</td></tr>
+        <tr><td><strong style="color:var(--accent);font-size:1.2rem">R</strong></td><td><strong>Relevant</strong></td><td>Is this specific to this repo, not generic advice?</td></tr>
+        <tr><td><strong style="color:var(--accent);font-size:1.2rem">A</strong></td><td><strong>Actionable</strong></td><td>Can the model actually follow this instruction?</td></tr>
+        <tr><td><strong style="color:var(--accent);font-size:1.2rem">F</strong></td><td><strong>Focused</strong></td><td>Does each instruction cover one thing only?</td></tr>
+        <tr><td><strong style="color:var(--accent);font-size:1.2rem">T</strong></td><td><strong>Testable</strong></td><td>Can I verify the model is following this instruction?</td></tr>
+      </tbody>
+    </table>
+    <div class="callout-pink callout" style="margin-top:1rem">
+      <p><strong>Anti-patterns to avoid:</strong> "Write good code" (vague), "Be careful with security" (unactionable), "Use best practices" (undefined), instructions over 2000 tokens (crowds out code context).</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 13: MODULE 5 - SKILLS -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <span class="module-badge m5">Module 5 &mdash; Skills &amp; Tools</span>
+    <h2>What Is a <span class="gradient-text3">Skill</span>?</h2>
+    <p>A skill (tool) is a capability an agent can invoke to interact with the world. Without skills, an agent can only <em>read</em>. With skills, it can <em>act</em>.</p>
+    <div class="diagram">    ┌─────────────────────────────────┐
+    │            Agent                │
+    │  ┌──────────────────────────┐   │
+    │  │        LLM Core          │   │
+    │  │  (reasoning + language)  │   │
+    │  └──────────┬───────────────┘   │
+    │             │ calls             │
+    │  ┌──────────▼───────────────┐   │
+    │  │         Skills           │   │
+    │  │ read_file  write_file    │   │
+    │  │ run_terminal  web_search │   │
+    │  │ call_api   create_pr     │   │
+    │  └──────────────────────────┘   │
+    └─────────────────────────────────┘</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 14: MODULE 5 - BUILT-IN SKILLS -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <span class="module-badge m5">Module 5</span>
+    <h2>Built-In <span class="gradient-text">Copilot Skills</span></h2>
+    <table>
+      <thead><tr><th>Skill</th><th>What It Does</th></tr></thead>
+      <tbody>
+        <tr><td><code>read_file</code></td><td>Reads the contents of a file in the workspace</td></tr>
+        <tr><td><code>write_file</code></td><td>Creates or overwrites a file</td></tr>
+        <tr><td><code>list_directory</code></td><td>Lists files in a directory</td></tr>
+        <tr><td><code>run_terminal_command</code></td><td>Executes a shell command and captures output</td></tr>
+        <tr><td><code>search_codebase</code></td><td>Semantic search across all files</td></tr>
+        <tr><td><code>search_web</code></td><td>Searches the web (where enabled)</td></tr>
+        <tr><td><code>create_pull_request</code></td><td>Opens a GitHub PR</td></tr>
+        <tr><td><code>create_issue</code></td><td>Creates a GitHub Issue</td></tr>
+      </tbody>
+    </table>
+    <div class="callout" style="margin-top:1rem">
+      <p><strong>Principle of Least Privilege:</strong> Grant only the skills the agent actually needs. A code reviewer needs <code>read_file</code> and <code>search_codebase</code>, not <code>run_terminal_command</code>.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 15: MODULE 5 - AGENT FILE STRUCTURE -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <span class="module-badge m5">Module 5</span>
+    <h2>Declaring Skills in <span class="gradient-text2">Agent Files</span></h2>
+    <div class="two-col">
+      <div>
+        <h3>Agent Definition Structure</h3>
+        <pre><code><span class="comment">---</span>
+<span class="keyword">name:</span> <span class="string">Code Reviewer</span>
+<span class="keyword">description:</span> <span class="string">Reviews PR changes
+  for quality and security.</span>
+<span class="keyword">tools:</span>
+  - <span class="fn">read_file</span>
+  - <span class="fn">get_file_diff</span>
+  - <span class="fn">search_codebase</span>
+  - <span class="fn">create_issue</span>
+<span class="comment">---</span>
+
+You are a meticulous code reviewer.
+Check for:
+- Logic errors and edge cases
+- Security vulnerabilities
+- Missing or inadequate tests
+- Convention violations</code></pre>
+      </div>
+      <div>
+        <h3>Skill Selection by Role</h3>
+        <table>
+          <thead><tr><th>Role</th><th>Skills</th></tr></thead>
+          <tbody>
+            <tr><td>Read-only analyst</td><td><code>read_file</code>, <code>search</code></td></tr>
+            <tr><td>Code generator</td><td>+ <code>write_file</code></td></tr>
+            <tr><td>Full-stack dev</td><td>+ <code>run_terminal</code></td></tr>
+            <tr><td>DevOps agent</td><td>+ <code>create_pr</code></td></tr>
+          </tbody>
+        </table>
+        <div class="callout-pink callout" style="margin-top:1rem">
+          <p><strong>Security:</strong> Skills that execute code are powerful and dangerous. Always ask: What is the blast radius? Is the agent's output reviewed before execution?</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 16: MODULE 5 - MCP -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <span class="module-badge m5">Module 5</span>
+    <h2>Custom Skills with <span class="gradient-text3">MCP</span></h2>
+    <p>The <strong>Model Context Protocol (MCP)</strong> lets you expose any function as a skill that agents can call.</p>
+    <div class="flow" style="margin-top:1rem">
+      <div class="flow-step">Agent</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step">MCP Client</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step">MCP Server</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step">Your API / Tool</div>
+    </div>
+    <div class="two-col" style="margin-top:1.2rem">
+      <div>
+        <h3 style="color:var(--accent2)">Good MCP Config</h3>
+        <pre><code>{
+  <span class="string">"local-weather"</span>: {
+    <span class="keyword">"command"</span>: <span class="string">"python"</span>,
+    <span class="keyword">"args"</span>: [
+      <span class="string">"${workspaceFolder}/examples/
+      skills/local-weather-mcp/server.py"</span>
+    ],
+    <span class="keyword">"env"</span>: {}
+  }
+}</code></pre>
+      </div>
+      <div>
+        <h3 style="color:var(--accent3)">Bad MCP Config</h3>
+        <pre><code>{
+  <span class="string">"weather"</span>: {
+    <span class="keyword">"command"</span>: <span class="string">"python"</span>,
+    <span class="keyword">"args"</span>: [<span class="string">"server.py"</span>]
+  }
+}
+<span class="comment">// Relative path is fragile</span>
+<span class="comment">// Vague server name</span>
+<span class="comment">// No explicit env block</span></code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 17: MODULE 6 - COPILOT CLI -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <span class="module-badge m6">Module 6 &mdash; Copilot CLI</span>
+    <h2>AI in Your <span class="gradient-text">Terminal</span></h2>
+    <p>Copilot CLI brings AI assistance directly to your terminal via the <code>gh</code> CLI.</p>
+    <div class="two-col" style="margin-top:1rem">
+      <div>
+        <h3><code>gh copilot suggest</code></h3>
+        <p>Converts natural language into shell commands.</p>
+        <pre><code><span class="fn">gh copilot suggest</span> <span class="string">"find all
+TypeScript files modified in
+the last 7 days"</span>
+
+<span class="comment"># Output:</span>
+find . -name <span class="string">"*.ts"</span> -mtime -<span class="num">7</span></code></pre>
+      </div>
+      <div>
+        <h3><code>gh copilot explain</code></h3>
+        <p>Explains an existing command in plain language.</p>
+        <pre><code><span class="fn">gh copilot explain</span> <span class="string">"find .
+-name '*.ts' -mtime -7
+-not -path '*/node_modules/*'"</span>
+
+<span class="comment"># Searches recursively for .ts
+# files modified within 7 days,
+# excluding node_modules</span></code></pre>
+      </div>
+    </div>
+    <div class="card-grid cols-3" style="margin-top:1rem">
+      <div class="card"><h3>shell</h3><p>General commands, file ops, pipelines</p></div>
+      <div class="card"><h3>git</h3><p>Branches, commits, rebases, worktrees</p></div>
+      <div class="card"><h3>gh</h3><p>PRs, issues, releases, workflows</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 18: MODULE 6 - PRACTICAL PATTERNS -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <span class="module-badge m6">Module 6</span>
+    <h2>Practical <span class="gradient-text2">CLI Patterns</span></h2>
+    <div class="card-grid cols-2">
+      <div class="card card-accent">
+        <h3>Quick Command Lookup</h3>
+        <pre><code><span class="fn">gh copilot suggest</span> <span class="string">"extract a
+.tar.gz to a specific directory"</span></code></pre>
+        <p style="margin-top:.5rem">No more Googling tar flags!</p>
+      </div>
+      <div class="card card-accent2">
+        <h3>Debug a Failing Command</h3>
+        <pre><code><span class="fn">gh copilot explain</span> <span class="string">"git rebase
+--onto main feature/old feature/new"</span></code></pre>
+        <p style="margin-top:.5rem">Understand before you fix.</p>
+      </div>
+      <div class="card card-accent3">
+        <h3>Script Generation</h3>
+        <pre><code><span class="fn">gh copilot suggest</span> <span class="string">"bash script
+that reads repos from repos.txt
+and clones each one"</span></code></pre>
+      </div>
+      <div class="card" style="border-left:3px solid #ffaa44;padding-left:1.2rem">
+        <h3>Shell Integration</h3>
+        <pre><code><span class="comment"># Add to ~/.zshrc</span>
+<span class="fn">copilot</span>() {
+  gh copilot suggest <span class="string">"$*"</span>
+}
+
+<span class="comment"># Then use anywhere:</span>
+copilot <span class="string">"delete merged branches"</span></code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 19: MODULE 7 - BUILD AN APP -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <span class="module-badge m7">Module 7 &mdash; Build an App with Agents</span>
+    <h2>Putting It All <span class="gradient-text3">Together</span></h2>
+    <p>Build a <strong>Task Tracker API</strong> using four pre-defined agents working in coordination.</p>
+    <div class="card-grid cols-4" style="margin-top:1rem">
+      <div class="card card-accent">
+        <h3>@backend-engineer</h3>
+        <p>Implements API routes and business logic</p>
+      </div>
+      <div class="card card-accent2">
+        <h3>@test-engineer</h3>
+        <p>Writes Jest unit &amp; integration tests</p>
+      </div>
+      <div class="card card-accent3">
+        <h3>@docs-writer</h3>
+        <p>Generates API documentation</p>
+      </div>
+      <div class="card" style="border-left:3px solid #ffaa44;padding-left:1.2rem">
+        <h3>@code-reviewer</h3>
+        <p>Reviews for quality &amp; security</p>
+      </div>
+    </div>
+    <table style="margin-top:1rem">
+      <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-green">GET</span></td><td><code>/tasks</code></td><td>List all tasks</td></tr>
+        <tr><td><span class="badge badge-purple">POST</span></td><td><code>/tasks</code></td><td>Create a new task</td></tr>
+        <tr><td><span class="badge badge-green">GET</span></td><td><code>/tasks/:id</code></td><td>Get a single task</td></tr>
+        <tr><td><span class="badge badge-pink">PUT</span></td><td><code>/tasks/:id</code></td><td>Update a task</td></tr>
+        <tr><td style="color:var(--accent3)"><span class="badge" style="background:rgba(255,68,68,.15);color:#ff6868">DELETE</span></td><td><code>/tasks/:id</code></td><td>Delete a task</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 20: MODULE 7 - MULTI-AGENT WORKFLOW -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <span class="module-badge m7">Module 7</span>
+    <h2>Multi-Agent <span class="gradient-text">Workflow</span></h2>
+    <p>Each step is delegated to the right specialist agent:</p>
+    <div class="flow" style="margin-top:1.2rem;flex-wrap:wrap">
+      <div class="flow-step" style="background:rgba(124,92,252,.15);border-color:var(--accent)">Step 1<br/><strong>@backend-engineer</strong><br/><small>Implement CRUD routes</small></div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step" style="background:rgba(0,212,170,.1);border-color:var(--accent2)">Step 2<br/><strong>@test-engineer</strong><br/><small>Write tests</small></div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step" style="background:rgba(255,107,157,.1);border-color:var(--accent3)">Step 3<br/><strong>@docs-writer</strong><br/><small>API documentation</small></div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step" style="background:rgba(255,170,68,.1);border-color:#ffaa44">Step 4<br/><strong>@code-reviewer</strong><br/><small>Review &amp; fix</small></div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step" style="background:rgba(124,92,252,.15);border-color:var(--accent)">Step 5<br/><strong>Copilot CLI</strong><br/><small>Commit &amp; push</small></div>
+    </div>
+    <div class="callout-green callout" style="margin-top:1.5rem">
+      <p><strong>Why this works:</strong> Each agent succeeds because of its agent definition file (persona + tools), the repo-level <code>copilot-instructions.md</code> (conventions), and your precise, outcome-focused prompt.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 21: KEY TAKEAWAYS -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-inner">
+    <h2><span class="gradient-text2">Key Takeaways</span></h2>
+    <div class="card-grid cols-2" style="margin-top:1rem">
+      <div class="card card-accent">
+        <h3>LLMs Are Token Predictors</h3>
+        <p>They predict the next token based on probabilities. Understanding this helps you write better prompts and manage context budgets.</p>
+      </div>
+      <div class="card card-accent2">
+        <h3>Instructions Compound</h3>
+        <p>Good instruction files improve every agent step. Use the CRAFT framework, keep them concise and conflict-free.</p>
+      </div>
+      <div class="card card-accent3">
+        <h3>Least Privilege for Skills</h3>
+        <p>Grant agents only the tools they need. A read-only analyst doesn't need <code>run_terminal_command</code>.</p>
+      </div>
+      <div class="card" style="border-left:3px solid #ffaa44;padding-left:1.2rem">
+        <h3>Specialise Your Agents</h3>
+        <p>Create focused agent personas with clear roles. Coordinate multiple agents for complex tasks.</p>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:1rem">
+      <p><strong>The big picture:</strong> You are not replaced by AI &mdash; you are <em>amplified</em>. The developer who understands how LLMs work and knows how to control them will ship faster, with fewer bugs, and with better documentation.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 22: THANK YOU -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide title-slide">
+  <div class="glow glow-purple" style="top:-100px;right:-50px"></div>
+  <div class="glow glow-green" style="bottom:-100px;left:-50px"></div>
+  <div class="slide-inner" style="text-align:center">
+    <h1><span class="gradient-text">Thank You!</span></h1>
+    <p class="subtitle" style="margin-bottom:1.5rem">Now go build something amazing with your AI co-pilots.</p>
+    <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem">
+      <span class="badge badge-purple">LLM Basics</span>
+      <span class="badge badge-green">Tokens &amp; Context</span>
+      <span class="badge badge-pink">Instructions</span>
+      <span class="badge badge-purple">CRAFT</span>
+      <span class="badge badge-green">Skills &amp; MCP</span>
+      <span class="badge badge-pink">Copilot CLI</span>
+      <span class="badge badge-purple">Multi-Agent</span>
+    </div>
+    <p class="desc" style="margin:0 auto;text-align:center">Course materials: <code>github.com/danforceDJ/Agentic-coding</code></p>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- NAV -->
+<div class="slide-counter"><span id="current">1</span> / <span id="total"></span></div>
+<div class="nav">
+  <button id="prev" aria-label="Previous slide">&#8592;</button>
+  <button id="next" aria-label="Next slide">&#8594;</button>
+</div>
+<div class="key-hint">Arrow keys or swipe to navigate</div>
+
+<script>
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let idx = 0;
+
+  document.getElementById('total').textContent = total;
+
+  function go(n){
+    if(n < 0 || n >= total) return;
+    slides[idx].classList.remove('active');
+    slides[idx].classList.add(n > idx ? 'prev' : '');
+    idx = n;
+    slides[idx].className = 'slide active';
+    document.getElementById('current').textContent = idx + 1;
+    document.getElementById('progress').style.width = ((idx+1)/total*100)+'%';
+    document.getElementById('prev').disabled = idx === 0;
+    document.getElementById('next').disabled = idx === total - 1;
+    // Reset scroll for new slide
+    slides[idx].scrollTop = 0;
+  }
+
+  document.getElementById('prev').addEventListener('click', ()=> go(idx-1));
+  document.getElementById('next').addEventListener('click', ()=> go(idx+1));
+
+  document.addEventListener('keydown', e => {
+    if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(idx+1); }
+    if(e.key === 'ArrowLeft') { e.preventDefault(); go(idx-1); }
+    if(e.key === 'Home') { e.preventDefault(); go(0); }
+    if(e.key === 'End') { e.preventDefault(); go(total-1); }
+  });
+
+  // Touch/swipe support
+  let touchX = 0;
+  document.addEventListener('touchstart', e => { touchX = e.changedTouches[0].screenX; });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].screenX - touchX;
+    if(Math.abs(dx) > 50) dx < 0 ? go(idx+1) : go(idx-1);
+  });
+
+  go(0);
+})();
+</script>
+</body>
+</html>
