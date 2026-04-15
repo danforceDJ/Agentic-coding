@@ -1,0 +1,8 @@
+{
+  "github.copilot.chat.mcpServers": {
+    "weather": {
+      "command": "python",
+      "args": ["server.py"]
+    }
+  }
+}

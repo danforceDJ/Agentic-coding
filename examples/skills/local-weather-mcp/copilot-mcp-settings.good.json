@@ -1,0 +1,11 @@
+{
+  "github.copilot.chat.mcpServers": {
+    "local-weather": {
+      "command": "python",
+      "args": [
+        "${workspaceFolder}/examples/skills/local-weather-mcp/server.py"
+      ],
+      "env": {}
+    }
+  }
+}
