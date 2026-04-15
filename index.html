@@ -208,6 +208,40 @@
     font-size:.75rem;color:var(--text-dim);z-index:90;opacity:.5;
     font-family:var(--font-mono);
   }
+
+  /* ── ABOUT ME ── */
+  .about-layout{display:grid;grid-template-columns:260px 1fr;gap:3rem;align-items:start;margin-top:1.2rem}
+  .about-photo-wrap{display:flex;flex-direction:column;align-items:center;gap:1rem}
+  .about-photo{
+    width:200px;height:200px;border-radius:50%;
+    object-fit:cover;
+    border:3px solid transparent;
+    background:
+      linear-gradient(var(--card),var(--card)) padding-box,
+      var(--gradient) border-box;
+    box-shadow:0 0 40px rgba(124,92,252,.35);
+  }
+  .about-social{display:flex;flex-direction:column;gap:.5rem;width:100%}
+  .about-social a{
+    display:flex;align-items:center;gap:.6rem;
+    padding:.45rem .8rem;border-radius:8px;border:1px solid var(--border);
+    background:var(--card);color:var(--text-dim);text-decoration:none;
+    font-size:.85rem;transition:all .2s;
+  }
+  .about-social a:hover{border-color:var(--accent);color:var(--text);background:rgba(124,92,252,.12)}
+  .about-social a .icon{font-size:1.1rem}
+  .about-info h2{margin-bottom:.3rem}
+  .about-title{font-size:1.15rem;color:var(--accent2);font-weight:600;margin-bottom:1rem}
+  .about-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin:.8rem 0}
+  .about-highlights{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-top:1rem}
+  .about-highlights .card{padding:1rem 1.2rem}
+  .about-highlights .card h3{font-size:1rem;margin-bottom:.25rem}
+  .about-highlights .card p{font-size:.88rem;margin:0}
+  @media(max-width:900px){
+    .about-layout{grid-template-columns:1fr;gap:1.5rem}
+    .about-photo{width:140px;height:140px}
+    .about-highlights{grid-template-columns:1fr}
+  }
 </style>
 </head>
 <body>
@@ -223,7 +257,7 @@
   <div class="glow glow-purple" style="top:-150px;left:-100px"></div>
   <div class="glow glow-green" style="bottom:-150px;right:-100px"></div>
   <div class="slide-inner" style="text-align:center">
-    <p style="font-size:.9rem;color:var(--text-dim);letter-spacing:.15em;text-transform:uppercase;margin-bottom:1.5rem">University Course</p>
+    <p style="font-size:.9rem;color:var(--text-dim);letter-spacing:.15em;text-transform:uppercase;margin-bottom:1.5rem">LLM basics and Github Copilot usage with control</p>
     <h1><span class="gradient-text">LLM Basics</span> &amp;<br/>GitHub Copilot</h1>
     <p class="subtitle">Understanding Large Language Models &amp; Controlling AI-Assisted Development</p>
     <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem">
@@ -236,7 +270,63 @@
 </div>
 
 <!-- ════════════════════════════════════════════════════════════ -->
-<!-- SLIDE 1: COURSE OVERVIEW -->
+<!-- SLIDE 1: ABOUT ME -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="glow glow-purple" style="top:-180px;right:-80px;opacity:.08"></div>
+  <div class="slide-inner">
+    <h2><span class="gradient-text">About Me</span></h2>
+    <div class="about-layout">
+
+      <!-- LEFT: photo + socials -->
+      <div class="about-photo-wrap">
+        <img
+          class="about-photo"
+          src="https://avatars.githubusercontent.com/u/15096550?v=4"
+          alt="Daniil Jerjomin"
+          onerror="this.src='https://ui-avatars.com/api/?name=Daniil+Jerjomin&size=200&background=7c5cfc&color=fff&rounded=true'"
+        />
+        <div class="about-social">
+          <a href="https://www.linkedin.com/in/daniiljerjomin/" target="_blank" rel="noopener">
+            <span class="icon">&#128101;</span> LinkedIn
+          </a>
+          <a href="https://github.com/danforceDJ" target="_blank" rel="noopener">
+            <span class="icon">&#128025;</span> GitHub &mdash; danforceDJ
+          </a>
+        </div>
+      </div>
+
+      <!-- RIGHT: info -->
+      <div class="about-info">
+        <h2>Daniil Jerjomin</h2>
+        <p class="about-title">Tech Lead/Architect</p>
+        <p>Passionate about developer productivity and teaching teams how to get the most out of GitHub Copilot — from inline completions to multi-agent workflows.</p>
+        <div class="about-tags">
+          <span class="badge badge-purple">GitHub Copilot</span>
+          <span class="badge badge-green">LLM Engineering</span>
+          <span class="badge badge-pink">Python</span>
+          <span class="badge badge-purple">Architecture</span>
+          <span class="badge badge-green">Agentic AI</span>
+          <span class="badge badge-pink">Developer Tooling</span>
+        </div>
+        <div class="about-highlights">
+          <div class="card card-accent">
+            <h3>&#127891; This Course</h3>
+            <p>4-hour hands-on guide to LLM basics, Copilot configuration &amp; multi-agent workflows</p>
+          </div>
+          <div class="card card-accent2">
+            <h3>&#128295; What We Build</h3>
+            <p>A production-ready Task Tracker API, coordinated by four specialised agents</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 2: COURSE OVERVIEW -->
 <!-- ════════════════════════════════════════════════════════════ -->
 <div class="slide">
   <div class="slide-inner">
@@ -952,23 +1042,20 @@ copilot <span class="string">"delete merged branches"</span></code></pre>
 
   function go(n){
     if(n < 0 || n >= total) return;
-    const prevIdx = idx;
-    // Deactivate outgoing slide; send it left only on forward navigation
-    slides[prevIdx].classList.remove('active');
-    if(n > prevIdx){
-      slides[prevIdx].classList.add('prev');
-    } else {
-      slides[prevIdx].classList.remove('prev');
-    }
+
+    // Outgoing slide: remove active; add prev only when moving forward
+    slides[idx].classList.remove('active');
+    if(n > idx) slides[idx].classList.add('prev');
+
+    // Incoming slide: strip prev (if any), then add active — preserves all other classes
     idx = n;
-    // Activate incoming slide using classList to preserve extra classes (e.g. title-slide)
     slides[idx].classList.remove('prev');
     slides[idx].classList.add('active');
+
     document.getElementById('current').textContent = idx + 1;
     document.getElementById('progress').style.width = ((idx+1)/total*100)+'%';
     document.getElementById('prev').disabled = idx === 0;
     document.getElementById('next').disabled = idx === total - 1;
-    // Reset scroll for new slide
     slides[idx].scrollTop = 0;
   }
 
@@ -990,7 +1077,10 @@ copilot <span class="string">"delete merged branches"</span></code></pre>
     if(Math.abs(dx) > 50) dx < 0 ? go(idx+1) : go(idx-1);
   });
 
-  go(0);
+  // Initialise UI — slide 0 already has 'active' in HTML, so just sync the controls
+  document.getElementById('progress').style.width = (1/total*100)+'%';
+  document.getElementById('prev').disabled = true;
+  document.getElementById('next').disabled = total <= 1;
 })();
 </script>
 </body>
