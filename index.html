@@ -952,8 +952,16 @@ copilot <span class="string">"delete merged branches"</span></code></pre>
 
   function go(n){
     if(n < 0 || n >= total) return;
-    slides[idx].classList.remove('active');
-    slides[idx].classList.add(n > idx ? 'prev' : '');
+    // Activate incoming slide without overwriting extra classes (e.g. title-slide)
+    slides[idx].classList.remove('prev');
+    slides[idx].classList.add('active');
+    // Deactivate outgoing slide; send it left only on forward navigation
+    slides[prevIdx].classList.remove('active');
+    if(n > prevIdx){
+      slides[prevIdx].classList.add('prev');
+    } else {
+      slides[prevIdx].classList.remove('prev');
+    }
     idx = n;
     slides[idx].className = 'slide active';
     document.getElementById('current').textContent = idx + 1;
